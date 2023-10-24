@@ -2,7 +2,7 @@ import {NextApiRequest, NextApiResponse} from "next";
 // import fetch from "node-fetch";
 
 const SPREADSHEET_ID = "16dd9VEvLtFHVH2ZIFGRcnSkpeauNv4qJqTJ8llYnXyM";
-// const API_KEY = "AIzaSyC6fLq_22BlQdIjJY8uwI6mrvDrbJXvz5c";
+
 // const SHEETS_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Sheet1?key=${API_KEY}`;
 
 // const handler = async (req: NextApiRequest, res: NextApiResponse) => {
