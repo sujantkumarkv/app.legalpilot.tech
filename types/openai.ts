@@ -8,7 +8,7 @@ export interface OpenAIModel {
 }
 
 export enum OpenAIModelID {
-  GPT_3_5_FT = 'ft:gpt-3.5-turbo-0613:legalpilot:hf-plus-corpus-v2:87nnMGsF',
+  GPT_3_5_FT = 'ft:gpt-3.5-turbo-0613:legalpilot:hf-plus-corpus-v1:86wBYE8I',
 }
 
 // in case the `DEFAULT_MODEL` environment variable is not set or set to an unsupported model

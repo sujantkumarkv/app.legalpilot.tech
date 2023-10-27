@@ -4,6 +4,7 @@ export interface Message {
   role: Role;
   content: string;
   feedback?: string;
+  messageuuid?: string;
 }
 
 export type Role = 'assistant' | 'user';

@@ -33,7 +33,7 @@ import { MemoizedChatMessage } from './MemoizedChatMessage';
 import { ModelSelect } from './ModelSelect';
 import { SystemPrompt } from './SystemPrompt';
 import { TemperatureSlider } from './Temperature';
-
+import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
   stopConversationRef: MutableRefObject<boolean>;
@@ -95,7 +95,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
 
         const chatBody: ChatBody = {
           model: updatedConversation.model,
-          messages: updatedConversation.messages,
+          messages: updatedConversation.messages.map(({ messageuuid, ...message }) => message),
           key: apiKey,
           prompt: updatedConversation.prompt,
           temperature: updatedConversation.temperature,
@@ -164,9 +164,11 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             text += chunkValue;
             if (isFirst) {
               isFirst = false;
+              // create uuid to uniquely refer the message & feedback
+              const messageuuid = uuidv4();
               const updatedMessages: Message[] = [
                 ...updatedConversation.messages,
-                { role: 'assistant', content: chunkValue },
+                { role: 'assistant', content: chunkValue, messageuuid: messageuuid },
               ];
               updatedConversation = {
                 ...updatedConversation,
@@ -177,12 +179,15 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                 value: updatedConversation,
               });
             } else {
+              // create uuid to uniquely refer the message & feedback
+              const messageuuid = uuidv4();
               const updatedMessages: Message[] =
                 updatedConversation.messages.map((message, index) => {
                   if (index === updatedConversation.messages.length - 1) {
                     return {
                       ...message,
                       content: text,
+                      messageuuid: messageuuid
                     };
                   }
                   return message;
@@ -197,7 +202,17 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
               });
             }
           }
+          
           saveConversation(updatedConversation);
+          // maybe here (if or else, after both, we get updatedConversation which can be used to update the sheets (prolly))
+          fetch('/api/sheets/main', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedConversation)
+          }).then(response => response.json()).then(data => console.log(data)).catch(err => console.log('errrrr1: ', err));
+          // api call done
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -214,9 +229,11 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           homeDispatch({ field: 'messageIsStreaming', value: false });
         } else {
           const { answer } = await response.json();
+          // create uuid to uniquely refer the message & feedback
+          const messageuuid = uuidv4();
           const updatedMessages: Message[] = [
             ...updatedConversation.messages,
-            { role: 'assistant', content: answer },
+            { role: 'assistant', content: answer, messageuuid: messageuuid },
           ];
           updatedConversation = {
             ...updatedConversation,
@@ -226,7 +243,17 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
             field: 'selectedConversation',
             value: updateConversation,
           });
+          
           saveConversation(updatedConversation);
+          // maybe here too (if or else, after both, we get updatedConversation which can be used to update the sheets (prolly))
+          fetch('/api/sheets/main', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedConversation)
+          }).then(response => response.json()).then(data => console.log(data)).catch(err => console.log('errrrr2: ', err));
+          // api call done
           const updatedConversations: Conversation[] = conversations.map(
             (conversation) => {
               if (conversation.id === selectedConversation.id) {
@@ -243,6 +270,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           homeDispatch({ field: 'loading', value: false });
           homeDispatch({ field: 'messageIsStreaming', value: false });
         }
+
       }
     },
     [

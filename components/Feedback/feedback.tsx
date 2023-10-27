@@ -11,7 +11,7 @@ import { saveConversation, saveConversations } from '@/utils/app/conversation';
 //   messageIndex: number;
 // }
 
-export const Feedback = ( { messageIndex }: { messageIndex: number } ) => {
+export const Feedback = ( { messageuuid, messageIndex }: { messageuuid?: string, messageIndex: number } ) => {
   const modalRef = useRef<HTMLDivElement>(null);
   const [isClicked, setIsClicked] = useState(false);
   const [feedback, setFeedback] = useState<string>('');
@@ -29,6 +29,7 @@ export const Feedback = ( { messageIndex }: { messageIndex: number } ) => {
         return {
           ...message,
           feedback,
+          messageuuid,
         };
       }
       return message;
@@ -50,6 +51,17 @@ export const Feedback = ( { messageIndex }: { messageIndex: number } ) => {
     saveConversations(updatedConversations);
     setFeedback('');
     setIsClicked(false);
+
+    // we get updatedConversation which can be used to update the sheets (prolly)
+    fetch('/api/sheets/main', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedConversation)
+    }).then(response => response.json()).then(data => console.log(data)).catch(err => console.log('feedbackerr: ', err));
+    // api call done
+
   };
 
   useEffect(() => {
