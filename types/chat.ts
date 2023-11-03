@@ -26,3 +26,12 @@ export interface Conversation {
   temperature: number;
   folderId: string | null;
 }
+
+export type sheetRowData = {
+  apikey: string;
+  convuuid: string;
+  user: string;
+  assistant: string;
+  messageuuid: string;
+  feedback?: string | '';
+}

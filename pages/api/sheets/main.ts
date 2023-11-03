@@ -1,5 +1,5 @@
 import {NextApiRequest, NextApiResponse} from "next";
-// import fetch from "node-fetch";
+import { Message } from "@/types/chat";
 
 const SPREADSHEET_ID = "16dd9VEvLtFHVH2ZIFGRcnSkpeauNv4qJqTJ8llYnXyM";
 
@@ -41,17 +41,39 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse,
       const sheet = doc.sheetsById[0]; // `Id` is gid=0 in the sheets link // or use doc.sheetsById[id] or doc.sheetsByTitle[title]
 
       let conversation = req.body;
-      let lastTwoMessages = conversation.messages.slice(-2);
-      let rowAppend = {
-        apikey: process.env.OPENAI_API_KEY || "",
-        conv_id: conversation.id,
-        user: lastTwoMessages[0].content,
-        assistant: lastTwoMessages[1].content,
-        message_id: lastTwoMessages[1].messageuuid,
-        feedback: lastTwoMessages[1].feedback || "",
-      };
-      // append
-      await sheet.addRow(rowAppend);
+
+      // check if chat already exists (feedback OR user query update)
+      const rows = await sheet.getRows();
+      let convMessage: Message | undefined;
+      let row: any | undefined;
+      for (let message of conversation.messages) {
+        row = rows.find((row) => row.get('messageuuid') === message.messageuuid);
+        if (row) {
+          convMessage = message;
+        }
+      }
+      if (row && convMessage) {
+        // update
+        row.assign({
+          assistant: convMessage.content,
+          feedback: convMessage.feedback || "",
+        });
+        await row.save();
+      } else {
+        let lastTwoMessages = conversation.messages.slice(-2);
+        // append
+        let rowAppend = {
+          apikey: process.env.OPENAI_API_KEY || "",
+          convuuid: conversation.id,
+          user: lastTwoMessages[0].content,
+          assistant: lastTwoMessages[1].content,
+          messageuuid: lastTwoMessages[1].messageuuid,
+          feedback: lastTwoMessages[1].feedback || "",
+        };
+        await sheet.addRow(rowAppend);
+      }
+      // break;
+      // done
       res.status(200).json({ message: 'works' });
 
     } catch (error) {
