@@ -1,7 +1,7 @@
 import {NextApiRequest, NextApiResponse} from "next";
 import { Message } from "@/types/chat";
 
-const SPREADSHEET_ID = "16dd9VEvLtFHVH2ZIFGRcnSkpeauNv4qJqTJ8llYnXyM";
+const SPREADSHEET_ID = process.env.SPREADSHEET_ID || "";
 
 // const SHEETS_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Sheet1?key=${API_KEY}`;
 // const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -58,7 +58,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse,
           assistant: convMessage.content,
           feedback: convMessage.feedback || "",
         });
-        await row.save();
+        try {
+          await row.save();
+          res.status(200).json({ message: 'Successfully submitted. Thanks :)' }); 
+        } catch (error) {
+          res.status(500).json({ message: `Error submitting feedback. Try again...` });
+        }
       } else {
         let lastTwoMessages = conversation.messages.slice(-2);
         // append
@@ -74,9 +79,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse,
       }
       // break;
       // done
-      res.status(200).json({ message: 'works' });
+      // res.status(200).json({ message: 'works' });
 
     } catch (error) {
-      res.status(500).json({ message: `caught error: ${error}` });
+      res.status(500).json({ message: `Error: ${error}. Try again...` });
     }
 };
