@@ -386,10 +386,7 @@ export const ChatInput = ({
         >
           Legalpilot
         </a>
-        .{' '}
-        {t(
-          "Legalpilot is an advanced chatbot kit for OpenAI's chat models aiming to mimic ChatGPT's interface and functionality.",
-        )}
+       
       </div>
     </div>
   );

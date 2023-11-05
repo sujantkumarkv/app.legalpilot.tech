@@ -218,8 +218,8 @@ export const ChatMessage: FC<Props> = memo(
                 )}
               </div>
             ) : (
-              <div className="relative group hover:bg-gray-200 rounded-md">
-                <div className="flex flex-row absolute z-10">
+              <div className="relative group rounded-md">
+                <div className="flex flex-row relative z-100"> {/* `absolute` makes the overflow issue. */}
                   <MemoizedReactMarkdown
                     className="prose dark:prose-invert flex-1"
                     remarkPlugins={[remarkGfm, remarkMath]}
